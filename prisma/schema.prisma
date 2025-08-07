@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +5,118 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  orders    Order[]
+  reviews   Review[]
+  wishlist  Wishlist?
+  cart      Cart?
+}
+
+model Product {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  discount    Float      @default(0)
+  rating      Float      @default(0)
+  image       String
+  category    Category   @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  reviews     Review[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  wishlist    Wishlist[] @relation("WishlistProducts")
+  combos      Combo[]    @relation("ComboProducts")
+  offers      Offer[]    @relation("OfferProducts")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  image       String?
+  products    Product[]
+}
+
+model Offer {
+  id              Int       @id @default(autoincrement())
+  title           String
+  description     String
+  discountPercent Float
+  startDate       DateTime
+  endDate         DateTime
+  products        Product[] @relation("OfferProducts")
+}
+
+model Combo {
+  id            Int       @id @default(autoincrement())
+  name          String
+  discountPrice Float
+  products      Product[] @relation("ComboProducts")
+}
+
+model Cart {
+  id       Int         @id @default(autoincrement())
+  user     User        @relation(fields: [userId], references: [id])
+  userId   Int         @unique
+  items    CartItem[]
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  quantity  Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  cartId    Int
+}
+
+model Order {
+  id        Int        @id @default(autoincrement())
+  user      User       @relation(fields: [userId], references: [id])
+  userId    Int
+  total     Float
+  createdAt DateTime   @default(now())
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        Int       @id @default(autoincrement())
+  product   Product   @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  price     Float
+  order     Order     @relation(fields: [orderId], references: [id])
+  orderId   Int
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+}
+
+model Wishlist {
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int       @unique
+  products  Product[] @relation("WishlistProducts")
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
 }
