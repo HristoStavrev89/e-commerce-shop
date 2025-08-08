@@ -11,6 +11,18 @@ services:
       POSTGRES_DB: brickbytedb
     volumes:
       - pgdata:/var/lib/postgresql/data
+    
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    ports:
+      - '8080:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@brickbyte.dev
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    depends_on:
+      - db
 
 volumes:
   pgdata:
