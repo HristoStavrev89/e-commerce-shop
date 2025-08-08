@@ -11,8 +11,6 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
 This project also uses **Prisma** as an ORM and **Docker** to manage PostgreSQL and pgAdmin containers. A Docker volume ensures persistent data even after container restarts.
 
 The project is created purely for **learning and training purposes**, with the goal of gaining hands-on experience in building modular and scalable backend systems.
@@ -36,6 +34,35 @@ The architecture follows best practices such as:
 ```bash
 $ npm install
 ```
+
+## Run Prisma
+
+```bash
+# Generate Prisma Client from schema
+npx prisma generate
+
+# Apply schema and create tables in the database
+npx prisma migrate dev --name init
+
+# (Optional) Open Prisma Studio in browser
+npx prisma studio
+
+```
+
+## Run Docker and set up database connection
+
+```bash
+# Start Docker containers (PostgreSQL + pgAdmin)
+docker-compose up -d
+
+# Stop containers
+docker-compose down
+
+# Connection string
+Creating a .env file with connection string for the database is also required.
+
+```
+
 
 ## Running the app
 
