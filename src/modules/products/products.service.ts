@@ -1,4 +1,9 @@
-import { Body, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Body,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { connect } from 'http2';
@@ -13,34 +18,46 @@ export class ProductsService {
 
   async findOne(id: number) {
     const doesExist = await this.prismaService.product.findUnique({
-        where: { id },
-        include: { category: true }
-    })
+      where: { id },
+      include: { category: true },
+    });
 
     if (!doesExist) {
-        throw new NotFoundException(`Product with ID ${id} not found`);
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
     return doesExist;
   }
 
   async create(createProductDto: CreateProductDto) {
+    try {
+      // Check if the category exist, before creating the product
+      await this.prismaService.category.findFirstOrThrow({
+        where: { id: createProductDto.categoryId },
+      });
 
-    // Check if the category exist, before creating the product
-    await this.prismaService.category.findFirstOrThrow({
-      where: { id: createProductDto.categoryId },
-    });
+      return this.prismaService.product.create({
+        data: {
+          name: createProductDto.name,
+          description: createProductDto.description,
+          price: createProductDto.price,
+          discount: createProductDto.discount,
+          rating: createProductDto.rating,
+          image: createProductDto.image,
+          category: { connect: { id: createProductDto.categoryId } },
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        // If The category record isnt found
+        throw new NotFoundException('Category not found');
+      }
+      if (error.code === 'P2002') {
+        // If the product name already exists
+        throw new ConflictException('Product with this name already exists');
+      }
 
-    return this.prismaService.product.create({
-      data: {
-        name: createProductDto.name,
-        description: createProductDto.description,
-        price: createProductDto.price,
-        discount: createProductDto.discount,
-        rating: createProductDto.rating,
-        image: createProductDto.image,
-        category: { connect: { id: createProductDto.categoryId } },
-      },
-    });
+      throw error;
+    }
   }
 }
