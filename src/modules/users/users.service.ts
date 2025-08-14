@@ -16,14 +16,20 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const hashPass = await bcrypt.hash(createUserDto.password, 10);
 
+    // TODO: Maybe different approach for setting roles in future
+    const userCount = await this.prismaService.user.count();
+    const isFirstUser = userCount === 0;
+    const role = isFirstUser ? Role.ADMIN : Role.CUSTOMER
+
     try {
       return await this.prismaService.user.create({
         data: {
           email: createUserDto.email,
+          name: createUserDto.name,
           password: hashPass,
-          role: createUserDto.role ?? Role.CUSTOMER,
+          role
         },
-        select: { id: true, email: true, role: true, createdAt: true }, // No pass return!
+        select: { id: true, name: true, email: true, role: true, createdAt: true }, // No pass return!
       });
     } catch (error) {
       if (error.code === 'P2005') {
@@ -36,7 +42,7 @@ export class UsersService {
   async findOne(id: number) {
     const user = await this.prismaService.user.findUnique({
       where: { id },
-      select: { id: true, email: true, role: true, createdAt: true }, // hide password
+      select: { id: true, name: true, email: true, role: true, createdAt: true }, // hide password
     });
     if (!user) throw new NotFoundException('User not found');
     return user;
@@ -47,6 +53,7 @@ export class UsersService {
       where: { email },
       select: {
         id: true,
+        name: true,
         email: true,
         role: true,
         createdAt: true,
@@ -77,7 +84,7 @@ export class UsersService {
 
   async findAll() {
     return this.prismaService.user.findMany({
-      select: { id: true, email: true, role: true, createdAt: true },
+      select: { id: true, email: true, name: true, role: true, createdAt: true },
     });
   }
 }

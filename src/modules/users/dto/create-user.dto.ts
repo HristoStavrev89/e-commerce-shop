@@ -4,8 +4,6 @@ import {
     MinLength,
     IsEnum
 } from 'class-validator';
-import { Role } from '@prisma/client';
-
 
 export class CreateUserDto {
 
@@ -14,11 +12,12 @@ export class CreateUserDto {
     readonly email: string;
 
     @IsNotEmpty()
+    @MinLength(4)
+    readonly name: string;
+
+    @IsNotEmpty()
     @MinLength(6)
     readonly password: string;
 
-    @IsNotEmpty()
-    @IsEnum(Role)
-    readonly role?: Role;
 
 }
