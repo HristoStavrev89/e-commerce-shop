@@ -19,18 +19,32 @@ export class UsersService {
     // TODO: Maybe different approach for setting roles in future
     const userCount = await this.prismaService.user.count();
     const isFirstUser = userCount === 0;
-    const role = isFirstUser ? Role.ADMIN : Role.CUSTOMER
+    const role = isFirstUser ? Role.ADMIN : Role.CUSTOMER;
 
     try {
-      return await this.prismaService.user.create({
+      const user = await this.prismaService.user.create({
         data: {
           email: createUserDto.email,
           name: createUserDto.name,
           password: hashPass,
-          role
+          role,
         },
-        select: { id: true, name: true, email: true, role: true, createdAt: true }, // No pass return!
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        }, // No pass return!
       });
+
+      await this.prismaService.cart.create({
+        data: {
+          userId: user.id,
+        },
+      });
+
+      return user;
     } catch (error) {
       if (error.code === 'P2005') {
         throw new ConflictException('Email already exists!');
@@ -42,9 +56,26 @@ export class UsersService {
   async findOne(id: number) {
     const user = await this.prismaService.user.findUnique({
       where: { id },
-      select: { id: true, name: true, email: true, role: true, createdAt: true }, // hide password
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        cart: {
+          include: {
+            items: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        },
+      },
     });
+
     if (!user) throw new NotFoundException('User not found');
+
     return user;
   }
 
@@ -84,7 +115,13 @@ export class UsersService {
 
   async findAll() {
     return this.prismaService.user.findMany({
-      select: { id: true, email: true, name: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
     });
   }
 }
