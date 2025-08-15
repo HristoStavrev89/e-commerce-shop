@@ -10,6 +10,23 @@ export class CategoriesService {
     return this.prisma.category.findMany();
   }
 
+  async getCategoryById(categoryId: number) {
+
+    //TODO: Maybe throw exception here if there is no category with such id
+    return this.prisma.product.findMany({
+      where: { id: categoryId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        discount: true,
+        rating: true,
+        image: true,
+      }
+    })
+  }
+
   async create(dto: CreateCategoryDto) {
     try {
       return await this.prisma.category.create({
