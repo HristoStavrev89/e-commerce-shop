@@ -25,6 +25,7 @@ return this.offerService.findAllActive();
 }
 
 
+@Roles(Role.ADMIN)
 @Get()
 findAll() {
 return this.offerService.findAll();
@@ -36,6 +37,7 @@ findOne(@Param('id', ParseIntPipe) id: number) {
 return this.offerService.findOne(id);
 }
 
+@Roles(Role.ADMIN)
 @Delete(':id')
 removeOne(@Param('id', ParseIntPipe) id: number) {
 return this.offerService.removeOne(id);
