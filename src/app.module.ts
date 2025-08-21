@@ -10,9 +10,10 @@ import { CartModule } from './modules/cart/cart.module';
 import { OrderModule } from './modules/order/order.module';
 import { ReviewModule } from './modules/review/review.module';
 import { OfferModule } from './modules/offer/offer.module';
+import { ComboModule } from './modules/combo/combo.module';
 
 @Module({
-  imports: [ProductsModule, PrismaModule, CategoriesModule, UsersModule, AuthModule, CartModule, OrderModule, ReviewModule, OfferModule],
+  imports: [ProductsModule, PrismaModule, CategoriesModule, UsersModule, AuthModule, CartModule, OrderModule, ReviewModule, OfferModule, ComboModule],
   controllers: [AppController],
   providers: [AppService],
 })

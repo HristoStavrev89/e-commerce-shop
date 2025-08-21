@@ -10,3 +10,5 @@ async function bootstrap() {
   await app.listen(3000);
 }
 bootstrap();
+
+//Todo: Add dtos from database to client
